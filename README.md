@@ -1,2 +1,2 @@
-# nurse_shifts_scheduler
+# NURSE SHIFTS SCHEDULER
 A scheduler for nurse shifts.
