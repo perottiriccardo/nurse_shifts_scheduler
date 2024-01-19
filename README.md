@@ -1,2 +1,2 @@
-# NURSE SHIFTS SCHEDULER
+# Nurse Shifts Scheduler
 A scheduler for nurse shifts.
