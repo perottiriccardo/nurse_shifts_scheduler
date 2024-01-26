@@ -1,9 +1,6 @@
 from pulp import LpVariable, lpSum, LpProblem, LpMinimize
 import pandas as pd
 import configparser
-import tkinter as tk
-from tkinter import ttk
-from tkinter.scrolledtext import ScrolledText
 
 
 class NurseShiftScheduler():
