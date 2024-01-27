@@ -92,7 +92,8 @@ def main():
         st.success("Configurazione salvata con successo. ")
 
     if st.button("Genera turni"):
-        if ultimi_5_gg.isnull().sum().sum() == 0:
+        if df_u5.isnull().sum().sum() + df_u5.eq('').sum().sum() == 0 and df_es.isnull().sum().sum() + df_es.eq('').sum().sum() == 0 and df_vi.isnull().sum().sum() + df_vi.eq('').sum().sum() == 0:
+ 
             with st.spinner("Attendi, sto ragionando molto intensamente, l'è nen 'na roba facile..."):
                 data_selezionata = datetime(anno, list(calendar.month_name).index(mese), 1)
                 
@@ -118,7 +119,7 @@ def main():
                 else:
                     st.text("Il problema non è risolvibile. Iiiiiimpossibile. Rilassa qualche vincolo.")
         else:
-            st.text("Ci sono caselle vuote nelle configurazioni dei 5 giorni precedenti. Riempile.")
+            st.text("Ci sono caselle vuote nelle configurazioni. Riempile.")
 
 if __name__ == "__main__":
     main()
