@@ -17,7 +17,7 @@ def main():
     st.set_page_config(layout="wide")
     
     # Greet the user by their name.
-    if st.experimental_user.email in ("zampese.veronica@gmail.com", "rikiper96@gmail.com", "test@example.com"):
+    if st.experimental_user.email in ("riccardo.perotti@outlook.it", "zampese.veronica@gmail.com", "rikiper96@gmail.com", "test@example.com"):
         st.write('Ciao, %s !' % st.experimental_user.email)
 
         st.title("Pianificatore di turni")
