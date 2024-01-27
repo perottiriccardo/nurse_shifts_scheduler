@@ -54,13 +54,9 @@ class NurseShiftScheduler():
         self.output_solution         = {}
 
     def giorno_settimana_cinque_giorni_prima(self):
-        print(self.data_selezionata)
-        
         giorni_settimana = [day[:3] for day in list(calendar.day_name)]
         data_cinque_giorni_prima = self.data_selezionata - timedelta(days=5)
         giorno_settimana = data_cinque_giorni_prima.strftime("%a")
-        print(giorno_settimana)
-        print(giorni_settimana.index(giorno_settimana))
         return giorni_settimana.index(giorno_settimana)
     
     def successione_giorni_settimana(self, indice):
@@ -71,11 +67,11 @@ class NurseShiftScheduler():
     def pianifica_turni(self):
 
         # Giorni mese precedente
-        for indice, riga in self.ultimi_5_gg.iterrows():
+        for infermiere, riga in self.ultimi_5_gg.iterrows():
             for i in ['-5', '-4', '-3', '-2', '-1']:
-                if i in self.giorni_mese and riga[i] in self.tipo_turno and riga['Infermiere'] in self.infermieri:
-                    self.turni[i][riga[i]][riga['Infermiere']].setInitialValue(1)
-                    self.turni[i][riga[i]][riga['Infermiere']].fixValue()
+                if i in self.giorni_mese and riga[i] in self.tipo_turno and infermiere in self.infermieri:
+                    self.turni[i][riga[i]][infermiere].setInitialValue(1)
+                    self.turni[i][riga[i]][infermiere].fixValue()
 
         # Aggiungi la funzione obiettivo (puoi personalizzarla in base alle tue esigenze)
         self.problema += lpSum(self.turni[giorno][turno][persona] for giorno in self.giorni_mese for turno in self.tipo_turno for persona in self.infermieri), "Funzione_Obiettivo"
@@ -238,6 +234,23 @@ class NurseShiftScheduler():
                         self.problema += self.turni[self.giorni_mese[j]][turno][persona] + self.turni[self.giorni_mese[j- 1]]["R"][persona] + self.turni[self.giorni_mese[j- 2]]["N"][persona]  <= 2 \
                             , f"Vincolo_Dipendente_Turni_2RN_{persona}_{turno}_{j}"
 
+        # Non possono esserci due sessioni di notti adiacenti (2 riposi)
+        for j in range(7, len(self.giorni_mese)):
+            for persona in self.infermieri:
+                if self.vincoli_infermiere["no_2_sessioni_notti_vicine"][persona]:
+                    for turno in self.turni_no_riposo:
+                        self.problema += self.turni[self.giorni_mese[j]]["N"][persona] + self.turni[self.giorni_mese[j- 1]]["R"][persona] + self.turni[self.giorni_mese[j- 2]]["R"][persona] + self.turni[self.giorni_mese[j- 3]]["N"][persona]  <= 3 \
+                            , f"Vincolo_Dipendente_Turni_N2RN_{persona}_{turno}_{j}"
+
+        # Non possono esserci due sessioni di notti adiacenti (1 riposo)
+        for j in range(6, len(self.giorni_mese)):
+            for persona in self.infermieri:
+                if self.vincoli_infermiere["no_2_sessioni_notti_vicine"][persona]:
+                    for turno in self.turni_no_riposo:
+                        self.problema += self.turni[self.giorni_mese[j]]["N"][persona] + self.turni[self.giorni_mese[j- 1]]["R"][persona] + self.turni[self.giorni_mese[j- 2]]["N"][persona]  <= 2 \
+                            , f"Vincolo_Dipendente_Turni_N1RN_{persona}_{turno}_{j}"
+
+
         # Non possono esserci R - turno - R (1 solo turno tra due riposi)
         for j in range(6, len(self.giorni_mese)):
             for persona in self.infermieri:
@@ -272,8 +285,5 @@ class NurseShiftScheduler():
             self.output_solution.loc[persona] = row
         return self.output_solution
 
-    def write_output_to_csv():
-        with open('turni.csv', 'w') as file:
-            file.write("Infermiere;" + ';'.join(map(str, self.giorni_mese)) + "\n")
-            for persona in self.output_solution:
-                file.write(f"{persona};{';'.join(self.output_solution[persona])}\n")         
+    def write_output_to_csv(self):      
+        self.output_solution.to_csv("turni.csv", sep=";")
