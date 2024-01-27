@@ -1,63 +1,27 @@
 from pulp import LpVariable, lpSum, LpProblem, LpMinimize
 import pandas as pd
 import configparser
-
+import calendar
+from datetime import datetime, timedelta
+import locale
 
 class NurseShiftScheduler():
+    locale.setlocale(locale.LC_TIME, 'it_IT.utf8')
+
     config = configparser.ConfigParser()
 
     # Leggi il file di configurazione
     config.read('config.ini')
-
-    n_giorni                = int(config['Vincoli']['Giorni_Mese'])
     infermieri              = [infermiere.strip() for infermiere in config['Anagrafica']['Infermieri'].split(',')]
-
     tipo_turno              = [tipo.strip() for tipo in config['Anagrafica']['Tipologie_Turno'].split(',')]
-    tipo_turno_lavorativi   = list(set(tipo_turno) - set(["F"]))
-    turni_no_riposo         = list(set(tipo_turno) - set(["R"]))
-    turni_no_RGN            = list(set(tipo_turno) - set(["R", "G", "N"]))
 
-    giorni_mese             = ['-5','-4','-3','-2','-1'] + [str(numero) for numero in range(1, n_giorni+1)]
-    giorni_mese_true        = [str(numero) for numero in range(1, n_giorni+1)]
-    
-
-    
-    def __init__(self):
+    def __init__(self, esigenze, ultimi_5_gg, vincoli_infermiere, data_selezionata):
         self.config = configparser.ConfigParser()
 
         # Leggi il file di configurazione
         self.config.read('config.ini')
 
-        self.n_giorni                = int(self.config['Vincoli']['Giorni_Mese'])
-        self.infermieri              = [infermiere.strip() for infermiere in self.config['Anagrafica']['Infermieri'].split(',')]
-
-        self.tipo_turno              = [tipo.strip() for tipo in self.config['Anagrafica']['Tipologie_Turno'].split(',')]
-        self.tipo_turno_lavorativi   = list(set(self.tipo_turno) - set(["F"]))
-        self.turni_no_riposo         = list(set(self.tipo_turno) - set(["R"]))
-        self.turni_no_RGN            = list(set(self.tipo_turno) - set(["R", "G", "N"]))
-
-        self.giorni_mese             = ['-5','-4','-3','-2','-1'] + [str(numero) for numero in range(1, self.n_giorni+1)]
-        self.giorni_mese_true        = [str(numero) for numero in range(1, self.n_giorni+1)]
-
-        self.esigenze                = pd.read_excel('esigenze.xlsx', engine='openpyxl')
-        self.ultimi_5_gg             = pd.read_csv('ultimi_5_gg.csv', sep=";")
-        self.vincoli_infermiere      = pd.read_excel('vincoli_infermiere.xlsx', engine='openpyxl').set_index("Infermiere").to_dict()
-
-        self.vincoli = {
-            'turni_massimi': self.n_giorni + 5
-        }
-
-
-        self.problema = LpProblem("Pianificazione_turni", LpMinimize)
-        self.turni = LpVariable.dicts("Turno", (self.giorni_mese, self.tipo_turno, self.infermieri), cat='Binary')
-
-    def __init__(self, esigenze, ultimi_5_gg, vincoli_infermiere):
-        self.config = configparser.ConfigParser()
-
-        # Leggi il file di configurazione
-        self.config.read('config.ini')
-
-        self.n_giorni                = int(self.config['Vincoli']['Giorni_Mese'])
+        self.n_giorni                = calendar.monthrange(data_selezionata.year, data_selezionata.month)[1]
         self.infermieri              = [infermiere.strip() for infermiere in self.config['Anagrafica']['Infermieri'].split(',')]
 
         self.tipo_turno              = [tipo.strip() for tipo in self.config['Anagrafica']['Tipologie_Turno'].split(',')]
@@ -72,13 +36,37 @@ class NurseShiftScheduler():
         self.ultimi_5_gg             = ultimi_5_gg
         self.vincoli_infermiere      = vincoli_infermiere.to_dict()
 
-        self.vincoli = {
-            'turni_massimi': self.n_giorni + 5
-        }
-
-
+        self.data_selezionata       = data_selezionata
+        self.giorno_inizio          = self.giorno_settimana_cinque_giorni_prima()
+        
+        self.turni_massimi          = self.n_giorni + 5
+        
         self.problema = LpProblem("Pianificazione_turni", LpMinimize)
         self.turni = LpVariable.dicts("Turno", (self.giorni_mese, self.tipo_turno, self.infermieri), cat='Binary')
+
+        self.intestazione_output = []
+        for d,s in zip(self.giorni_mese, self.successione_giorni_settimana(self.giorno_settimana_cinque_giorni_prima())):
+            if int(d) < 0:
+                self.intestazione_output.append(str(s) + " (" + str(d) + ")")
+            else: 
+                self.intestazione_output.append(str(s) + " " + str(d))
+
+        self.output_solution         = {}
+
+    def giorno_settimana_cinque_giorni_prima(self):
+        print(self.data_selezionata)
+        
+        giorni_settimana = [day[:3] for day in list(calendar.day_name)]
+        data_cinque_giorni_prima = self.data_selezionata - timedelta(days=5)
+        giorno_settimana = data_cinque_giorni_prima.strftime("%a")
+        print(giorno_settimana)
+        print(giorni_settimana.index(giorno_settimana))
+        return giorni_settimana.index(giorno_settimana)
+    
+    def successione_giorni_settimana(self, indice):
+        giorni_settimana = [day[:3] for day in list(calendar.day_name)]
+        giorni_settimana = giorni_settimana[indice:] + giorni_settimana[:indice]
+        return [giorni_settimana[i % 7] for i in range(self.n_giorni+6)]
 
     def pianifica_turni(self):
 
@@ -90,11 +78,11 @@ class NurseShiftScheduler():
                     self.turni[i][riga[i]][riga['Infermiere']].fixValue()
 
         # Aggiungi la funzione obiettivo (puoi personalizzarla in base alle tue esigenze)
-        # Agire su questa
         self.problema += lpSum(self.turni[giorno][turno][persona] for giorno in self.giorni_mese for turno in self.tipo_turno for persona in self.infermieri), "Funzione_Obiettivo"
 
         # Vincoli esigenze (leggo dal file) - Calcolo anche numerosità ferie che non vanno aggiunte dal sistema 
         n_ferie = 0
+        n_assenze = 0
         for giorno in self.giorni_mese:
             for persona in self.infermieri:
                 lt = []
@@ -106,13 +94,15 @@ class NurseShiftScheduler():
                     self.problema += lpSum(self.turni[giorno][t][persona] for t in lt) >= 1, f"Vincolo_esigenza{persona}_{giorno}"
 
                 n_ferie += lt.count("F")
+                n_assenze += lt.count("A")
 
-        # Non usare ferie oltre quelle fissate
+        # Non usare ferie e assenze oltre quelle fissate
         self.problema += lpSum(self.turni[giorno]["F"][persona] for persona in self.infermieri for giorno in self.giorni_mese_true ) == n_ferie, f"Vincolo_Ferie_Max_{persona}"
+        self.problema += lpSum(self.turni[giorno]["A"][persona] for persona in self.infermieri for giorno in self.giorni_mese_true ) == n_assenze, f"Vincolo_Assenze_Max_{persona}"
 
         # Ogni persona deve assegnare un turno al giorno, che sia riposo o lavoro
         for persona in self.infermieri:
-            self.problema += lpSum(self.turni[giorno][turno][persona] for giorno in self.giorni_mese for turno in self.tipo_turno) == self.vincoli['turni_massimi'], f"Vincolo_Turni_Max_{persona}"
+            self.problema += lpSum(self.turni[giorno][turno][persona] for giorno in self.giorni_mese for turno in self.tipo_turno) == self.turni_massimi, f"Vincolo_Turni_Max_{persona}"
 
         # RIPOSI DA FARE IN UN UN MESE
         for persona in self.infermieri:
@@ -267,24 +257,23 @@ class NurseShiftScheduler():
 
 
         # Risolvi il problema
-        return self.problema.solve()
-
+        return self.problema.solve()    
 
     def generate_output(self):
-        dic = {}
+        self.output_solution=pd.DataFrame(columns=["Infermiere"]  + self.intestazione_output).set_index("Infermiere")
+        
         for persona in self.infermieri:
+            row = []
             for giorno in self.giorni_mese:
                 for turno in self.tipo_turno:
                     if self.turni[giorno][turno][persona].value() == 1:
-                        if persona not in dic:
-                            dic[persona] = [turno]
-                        else:
-                            dic[persona].append(turno)
+                        row.append(turno)
 
+            self.output_solution.loc[persona] = row
+        return self.output_solution
+
+    def write_output_to_csv():
         with open('turni.csv', 'w') as file:
             file.write("Infermiere;" + ';'.join(map(str, self.giorni_mese)) + "\n")
-            for persona in dic:
-                file.write(f"{persona};{';'.join(dic[persona])}\n")         
-
-        # Stampa il valore della funzione obiettivo
-        # print("Costo totale:", self.problema.objective.value())
+            for persona in self.output_solution:
+                file.write(f"{persona};{';'.join(self.output_solution[persona])}\n")         

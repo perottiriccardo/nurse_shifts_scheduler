@@ -1,5 +1,5 @@
 Infermiere;no_6_turni_consecutivi;no_mattino_dopo_pomeriggio;no_mattino_dopo_giornata;no_giornata_dopo_pomeriggio;due_riposi_dopo_notti;piu_turni_tra_riposi;no_5_notti_consecutive;no_3_riposi_consecutivi;riposi;notti_max;mattini_max;pomeriggi_max;giornate_max;notti_min;mattini_min;pomeriggi_min;giornate_min
-Valentina;True;True;True;True;True;True;True;True;10.0;6.0;31.0;31.0;3.0;0.0;8.0;0.0;0.0
-Veronica;True;True;True;True;True;True;True;True;10.0;8.0;31.0;31.0;3.0;0.0;0.0;0.0;0.0
-Denise;True;True;True;True;True;True;True;True;10.0;31.0;31.0;31.0;3.0;0.0;0.0;0.0;0.0
-Samuele;True;True;True;True;True;True;True;True;10.0;31.0;31.0;31.0;3.0;0.0;0.0;0.0;0.0
+Valentina;True;True;True;True;True;True;True;True;10;31;31;31;3;0;0;0;0
+Veronica;True;True;True;True;True;True;True;True;10;31;31;31;3;0;0;0;0
+Denise;True;True;True;True;True;True;True;True;10;31;31;31;3;0;0;0;0
+Samuele;True;True;True;True;True;True;True;True;10;31;31;31;3;0;0;0;0
