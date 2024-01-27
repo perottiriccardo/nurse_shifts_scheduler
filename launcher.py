@@ -143,7 +143,7 @@ def main():
 
     footer="""
     <div style='position: fixed;left: 0;bottom: 0;width: 100%; background-color:#262730; text-align: center;'>
-        <p style='margin:10px'>
+        <p style='margin:10px; font-size:12px' >
             Developed with ❤ by 
                     <a href="https://www.instagram.com/riccardoperotti_/" target="_blank">
                         Riccardo Perotti
