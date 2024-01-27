@@ -49,7 +49,7 @@ def main():
 
         with tab_esigenze:
             st.header("Esigenze")
-            #st.text("Inserisci qui sotto le esigenze dei tuoi infermieri. Puoi mettere le lettere P,M,R,F,G,N e concatenazioni di queste (P|N -> può fare sia pomeriggio che notte)")
+            st.text("Inserisci qui sotto le esigenze dei tuoi infermieri")
             #st.text("Esempi: P se vuoi che l'infermiere faccia pomeriggio, P|N se vuoi che l'infermiere faccia o pomeriggio o notte, R|P|M se vuoi che l'infermiere faccia o riposo, o pomeriggio o notte.")
 
             esigenze['Infermiere'] = esigenze['Infermiere'].astype(pd.CategoricalDtype(t.NurseShiftScheduler.infermieri))
