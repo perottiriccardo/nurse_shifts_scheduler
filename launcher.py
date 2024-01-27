@@ -4,6 +4,7 @@ import turni as t
 import calendar
 from datetime import datetime, timedelta
 import locale
+from itertools import combinations
 
 locale.setlocale(locale.LC_TIME, 'it_IT.utf8')
 
@@ -48,11 +49,19 @@ def main():
 
         with tab_esigenze:
             st.header("Esigenze")
-            st.text("Inserisci qui sotto le esigenze dei tuoi infermieri. Puoi mettere le lettere P,M,R,F,G,N e concatenazioni di queste (P|N -> può fare sia pomeriggio che notte)")
-            st.text("Esempi: P se vuoi che l'infermiere faccia pomeriggio, P|N se vuoi che l'infermiere faccia o pomeriggio o notte, R|P|M se vuoi che l'infermiere faccia o riposo, o pomeriggio o notte.")
+            #st.text("Inserisci qui sotto le esigenze dei tuoi infermieri. Puoi mettere le lettere P,M,R,F,G,N e concatenazioni di queste (P|N -> può fare sia pomeriggio che notte)")
+            #st.text("Esempi: P se vuoi che l'infermiere faccia pomeriggio, P|N se vuoi che l'infermiere faccia o pomeriggio o notte, R|P|M se vuoi che l'infermiere faccia o riposo, o pomeriggio o notte.")
 
             esigenze['Infermiere'] = esigenze['Infermiere'].astype(pd.CategoricalDtype(t.NurseShiftScheduler.infermieri))
             esigenze['Giorno'] = esigenze['Giorno'].astype(pd.CategoricalDtype([numero for numero in range(1, calendar.monthrange(anno, list(calendar.month_name).index(mese))[1]+1)]))
+
+            risultati = []
+            for lunghezza in range(1, len(t.NurseShiftScheduler.tipo_turno) + 1):
+                risultati.extend(combinations(t.NurseShiftScheduler.tipo_turno, lunghezza))
+            tipi_esigenze = []
+            for combo in risultati:
+                tipi_esigenze.append('|'.join(combo))
+            esigenze['Esigenze'] = esigenze['Esigenze'].astype(pd.CategoricalDtype(tipi_esigenze))
             df_es = st.data_editor(esigenze, num_rows="dynamic")
 
         with tab_vincoli:

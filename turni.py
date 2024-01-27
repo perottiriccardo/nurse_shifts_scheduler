@@ -5,6 +5,8 @@ import calendar
 from datetime import datetime, timedelta
 import locale
 
+
+
 class NurseShiftScheduler():
     locale.setlocale(locale.LC_TIME, 'it_IT.utf8')
 
