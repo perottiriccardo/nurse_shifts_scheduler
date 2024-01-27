@@ -17,8 +17,7 @@ def main():
     st.set_page_config(layout="wide")
     
     # Greet the user by their name.
-
-    st.write('Ciao, %s !' % st.experimental_user.email)
+    #st.write('Ciao, %s !' % st.experimental_user.email)
 
     st.title("Pianificatore di turni")
 
@@ -93,31 +92,33 @@ def main():
         st.success("Configurazione salvata con successo. ")
 
     if st.button("Genera turni"):
-        with st.spinner("Attendi, sto ragionando molto intensamente, l'è nen 'na roba facile..."):
-            data_selezionata = datetime(anno, list(calendar.month_name).index(mese), 1)
-            
-            nurse_scheduler = t.NurseShiftScheduler(df_es, df_u5, df_vi, data_selezionata)
-            if nurse_scheduler.pianifica_turni() == 1:
-                turni = nurse_scheduler.generate_output()
-                st.text(f"Turni del mese di {mese} {anno}")
-                df_tu = st.dataframe(turni.style.map(past_days, subset=nurse_scheduler.intestazione_output[:5]).map(color_vowel))
-
-                df_statistiche = turni[nurse_scheduler.intestazione_output[5:]].apply(pd.Series.value_counts, axis=1).fillna(0).astype(int)
-
-                for tt in nurse_scheduler.tipo_turno:
-                    if tt not in df_statistiche.columns:
-                        df_statistiche[tt] = 0
-
-                df_statistiche['Totale ore'] = df_statistiche.apply(lambda row: row['M'] * 8 + row['P'] * 8 + row['F'] * 8 + row['A'] * 8 + row['N'] * 8 + row['G'] * 9, axis=1)
-
-                st.text("Statistiche riepilogative")
-                st.dataframe(df_statistiche)
-
-                nurse_scheduler.write_output_to_csv()
+        if ultimi_5_gg.isnull().sum().sum() == 0:
+            with st.spinner("Attendi, sto ragionando molto intensamente, l'è nen 'na roba facile..."):
+                data_selezionata = datetime(anno, list(calendar.month_name).index(mese), 1)
                 
-            else:
-                st.text("Il problema non è risolvibile. Iiiiiimpossibile. Rilassa qualche vincolo.")
-        
+                nurse_scheduler = t.NurseShiftScheduler(df_es, df_u5, df_vi, data_selezionata)
+                if nurse_scheduler.pianifica_turni() == 1:
+                    turni = nurse_scheduler.generate_output()
+                    st.text(f"Turni del mese di {mese} {anno}")
+                    df_tu = st.dataframe(turni.style.map(past_days, subset=nurse_scheduler.intestazione_output[:5]).map(color_vowel))
+
+                    df_statistiche = turni[nurse_scheduler.intestazione_output[5:]].apply(pd.Series.value_counts, axis=1).fillna(0).astype(int)
+
+                    for tt in nurse_scheduler.tipo_turno:
+                        if tt not in df_statistiche.columns:
+                            df_statistiche[tt] = 0
+
+                    df_statistiche['Totale ore'] = df_statistiche.apply(lambda row: row['M'] * 8 + row['P'] * 8 + row['F'] * 8 + row['A'] * 8 + row['N'] * 8 + row['G'] * 9, axis=1)
+
+                    st.text("Statistiche riepilogative")
+                    st.dataframe(df_statistiche)
+
+                    nurse_scheduler.write_output_to_csv()
+                    
+                else:
+                    st.text("Il problema non è risolvibile. Iiiiiimpossibile. Rilassa qualche vincolo.")
+        else:
+            st.text("Ci sono caselle vuote nelle configurazioni dei 5 giorni precedenti. Riempile.")
 
 if __name__ == "__main__":
     main()
