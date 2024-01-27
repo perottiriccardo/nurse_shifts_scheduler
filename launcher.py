@@ -20,8 +20,14 @@ def main():
     # Greet the user by their name.
     #st.write('Ciao, %s !' % st.experimental_user.email)
 
+  
     header="""
-    <h1> 👩‍⚕️ Pianificatore di turni </h1>
+    <div >
+        <span style="float: left;"><h1> 👩‍⚕️ Pianificatore di turni </h1></span> 
+        <span style="float: right;"><h4> Versione 1.0 </h4></span>
+
+    </div>
+    
     """
     st.markdown(header,unsafe_allow_html=True)
 
@@ -49,9 +55,8 @@ def main():
 
         with tab_esigenze:
             st.header("Esigenze")
-            st.text("Inserisci qui sotto le esigenze dei tuoi infermieri")
-            #st.text("Esempi: P se vuoi che l'infermiere faccia pomeriggio, P|N se vuoi che l'infermiere faccia o pomeriggio o notte, R|P|M se vuoi che l'infermiere faccia o riposo, o pomeriggio o notte.")
-
+            st.text("Inserisci qui sotto le esigenze dei tuoi infermieri.")
+            
             esigenze['Infermiere'] = esigenze['Infermiere'].astype(pd.CategoricalDtype(t.NurseShiftScheduler.infermieri))
             esigenze['Giorno'] = esigenze['Giorno'].astype(pd.CategoricalDtype([numero for numero in range(1, calendar.monthrange(anno, list(calendar.month_name).index(mese))[1]+1)]))
 
@@ -62,11 +67,12 @@ def main():
             for combo in risultati:
                 tipi_esigenze.append('|'.join(combo))
             esigenze['Esigenze'] = esigenze['Esigenze'].astype(pd.CategoricalDtype(tipi_esigenze))
+            
             df_es = st.data_editor(esigenze, num_rows="dynamic")
 
         with tab_vincoli:
             st.header("Vincoli per infermiere")
-            st.text("Inserisci qui sotto i vincoli da rispettare per ciascun infermiere. Se il generatore non dovesse trovare soluzioni, prova a togliere qualche vincolo, a partire da quelli più soft.")
+            st.text("Inserisci qui sotto i vincoli da rispettare per ciascun infermiere.")
             
             vincoli_infermiere["no_6_turni_consecutivi"]=vincoli_infermiere["no_6_turni_consecutivi"].astype(pd.BooleanDtype())
             vincoli_infermiere["no_mattino_dopo_pomeriggio"]=vincoli_infermiere["no_mattino_dopo_pomeriggio"].astype(pd.BooleanDtype())
@@ -96,14 +102,13 @@ def main():
                 ultimi_5_gg[g] = ultimi_5_gg[g].astype(pd.CategoricalDtype(t.NurseShiftScheduler.tipo_turno))
             df_u5 = st.data_editor(ultimi_5_gg)
 
-    
-    if st.button("Salva configurazione"):
-        df_es.to_csv('esigenze.csv', index=False, sep=";")
-        df_u5.reset_index().to_csv('ultimi_5_gg.csv', index=False, sep=";")
-        df_vi.reset_index().to_csv('vincoli_infermiere.csv', index=False, sep=";")
-        st.success("Configurazione salvata con successo. ")
+        if st.button("🖍️ Salva configurazione"):
+            df_es.to_csv('esigenze.csv', index=False, sep=";")
+            df_u5.reset_index().to_csv('ultimi_5_gg.csv', index=False, sep=";")
+            df_vi.reset_index().to_csv('vincoli_infermiere.csv', index=False, sep=";")
+            st.success("Configurazione salvata con successo. ")
 
-    if st.button("Genera turni"):
+    if st.button("🧮 Genera turni"):
         if df_u5.isnull().sum().sum() + df_u5.eq('').sum().sum() == 0 and df_es.isnull().sum().sum() + df_es.eq('').sum().sum() == 0 and df_vi.isnull().sum().sum() + df_vi.eq('').sum().sum() == 0:
  
             with st.spinner("Attendi, sto ragionando molto intensamente, l'è nen 'na roba facile..."):
@@ -112,7 +117,12 @@ def main():
                 nurse_scheduler = t.NurseShiftScheduler(df_es, df_u5, df_vi, data_selezionata)
                 if nurse_scheduler.pianifica_turni() == 1:
                     turni = nurse_scheduler.generate_output()
-                    st.text(f"Turni del mese di {mese} {anno}")
+                    
+                    title_pianificazione=f"""
+                    <h3> Turni di {mese} {anno} </h3>
+                    """
+                    st.markdown(title_pianificazione,unsafe_allow_html=True)
+
                     df_tu = st.dataframe(turni.style.map(past_days, subset=nurse_scheduler.intestazione_output[:5]).map(color_vowel))
 
                     df_statistiche = turni[nurse_scheduler.intestazione_output[5:]].apply(pd.Series.value_counts, axis=1).fillna(0).astype(int)
@@ -123,7 +133,11 @@ def main():
 
                     df_statistiche['Totale ore'] = df_statistiche.apply(lambda row: row['M'] * 8 + row['P'] * 8 + row['F'] * 8 + row['A'] * 8 + row['N'] * 8 + row['G'] * 9, axis=1)
 
-                    st.text("Statistiche riepilogative")
+                    title_statistiche=f"""
+                    <h4> Statistiche riepilogative </h4>
+                    """
+                    st.markdown(title_statistiche,unsafe_allow_html=True)
+
                     st.dataframe(df_statistiche)
 
                     nurse_scheduler.write_output_to_csv()
