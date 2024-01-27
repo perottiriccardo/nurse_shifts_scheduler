@@ -103,7 +103,7 @@ def main():
             df_es.to_csv('esigenze.csv', index=False, sep=";")
             df_u5.reset_index().to_csv('ultimi_5_gg.csv', index=False, sep=";")
             df_vi.reset_index().to_csv('vincoli_infermiere.csv', index=False, sep=";")
-            st.success("Configurazione salvata con successo. ")
+            st.toast('Configurazione salvata con successo.', icon='🎉') 
 
     if st.button("🧮 Genera turni"):
         if df_u5.isnull().sum().sum() + df_u5.eq('').sum().sum() == 0 and df_es.isnull().sum().sum() + df_es.eq('').sum().sum() == 0 and df_vi.isnull().sum().sum() + df_vi.eq('').sum().sum() == 0:
@@ -113,6 +113,8 @@ def main():
                 
                 nurse_scheduler = t.NurseShiftScheduler(df_es, df_u5, df_vi, data_selezionata)
                 if nurse_scheduler.pianifica_turni() == 1:
+                    st.toast('Super, abbiamo una pianificazione!', icon='🎉')
+
                     turni = nurse_scheduler.generate_output()
                     
                     title_pianificazione=f"""<h3> Turni di {mese} {anno} </h3>"""
