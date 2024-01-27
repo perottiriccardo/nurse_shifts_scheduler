@@ -34,6 +34,38 @@ def main():
     esigenze                = pd.read_csv('esigenze.csv', sep=";")
     vincoli_infermiere      = pd.read_csv('vincoli_infermiere.csv', sep=";").set_index("Infermiere")
 
+    with st.expander("📖 Legenda e istruzioni"):
+        st.code(
+"""
+Benvenuto nel pianificatore di turni. 
+
+Nel pannello sotto puoi vedere l'ultima pianificazione elaborata. 
+
+Nel terzo pannello invece puoi configurare la pianificazione su tre ambiti: esigenze, vincoli e turni del mese precedente.
+
+Nella pagina delle esigenze potrai inserire i turni che i tuoi infermieri sono disponibili a fare nei giorni scelti. 
+L'algoritmo, per quei giorni e quegli infermieri, non utilizzerà altre tipologie di turno se non quelle scelte.
+
+Nella pagina dei vincoli potrai scegliere se far rispettare all'algoritmo i vincoli per ciascun infermiere.
+Ci sono molti vincoli da utilizzare. In fondo ci sono vincoli di minimo e massimo numero di tipologie di turno.
+
+Nella pagina dei turni del mese precedente puoi impostare i turni del mese precedente affinché siano rispettati i vincoli nel mese corrente.
+
+Il tasto "🖍️ Salva configurazione" permette di salvare la configurazione impostata per prossime elaborazioni.
+
+Il tasto "🧮 Genera turni" tenta di pianificare i turni con la configurazione impostata. Se ci sono troppi vincoli/esigenze è possibile che fallisca, in tal caso togliere vincoli.
+
+Legenda turni: 
+M = Mattino. Turno di mattino.
+P = Pomeriggio. Turno di pomeriggio.
+N = Notte. Turno di notte.
+G = Giornata. Turno giornata completa (9 ore).
+R = Riposo. Turno di riposo.
+F = Ferie. Turno di ferie e permessi.
+A = Assente. Da utilizzare per malattia.
+
+""", language=None)
+
     with st.expander("📆 Ultima pianificazione salvata"):
         try:
             turni_old = pd.read_csv('turni.csv', sep=";").set_index("Infermiere")
