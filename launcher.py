@@ -20,14 +20,11 @@ def main():
     # Greet the user by their name.
     #st.write('Ciao, %s !' % st.experimental_user.email)
 
-  
     header="""
     <div >
         <span style="float: left;"><h1> 👩‍⚕️ Pianificatore di turni </h1></span> 
         <span style="float: right;"><h4> Versione 1.0 </h4></span>
-
     </div>
-    
     """
     st.markdown(header,unsafe_allow_html=True)
 
@@ -39,7 +36,7 @@ def main():
 
     with st.expander("📆 Ultima pianificazione salvata"):
         try:
-            turni_old             = pd.read_csv('turni.csv', sep=";").set_index("Infermiere")
+            turni_old = pd.read_csv('turni.csv', sep=";").set_index("Infermiere")
             df_tu_old = st.dataframe(turni_old.style.map(past_days, subset=turni_old.columns[:5]).map(color_vowel))
         except:
             st.text("Non ci sono pianificazioni di turni salvate.")
@@ -118,9 +115,7 @@ def main():
                 if nurse_scheduler.pianifica_turni() == 1:
                     turni = nurse_scheduler.generate_output()
                     
-                    title_pianificazione=f"""
-                    <h3> Turni di {mese} {anno} </h3>
-                    """
+                    title_pianificazione=f"""<h3> Turni di {mese} {anno} </h3>"""
                     st.markdown(title_pianificazione,unsafe_allow_html=True)
 
                     df_tu = st.dataframe(turni.style.map(past_days, subset=nurse_scheduler.intestazione_output[:5]).map(color_vowel))
@@ -133,9 +128,7 @@ def main():
 
                     df_statistiche['Totale ore'] = df_statistiche.apply(lambda row: row['M'] * 8 + row['P'] * 8 + row['F'] * 8 + row['A'] * 8 + row['N'] * 8 + row['G'] * 9, axis=1)
 
-                    title_statistiche=f"""
-                    <h4> Statistiche riepilogative </h4>
-                    """
+                    title_statistiche=f"""<h4> Statistiche riepilogative </h4>"""
                     st.markdown(title_statistiche,unsafe_allow_html=True)
 
                     st.dataframe(df_statistiche)
@@ -146,10 +139,6 @@ def main():
                     st.text("Il problema non è risolvibile. Iiiiiimpossibile. Rilassa qualche vincolo.")
         else:
             st.text("Ci sono caselle vuote nelle configurazioni. Riempile.")
-
-
-
-
 
 
     footer="""
@@ -164,12 +153,6 @@ def main():
     </div>
     """
     st.markdown(footer,unsafe_allow_html=True)
-
-
-
-
-
-
 
 
 if __name__ == "__main__":
