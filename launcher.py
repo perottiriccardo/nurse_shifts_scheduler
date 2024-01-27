@@ -133,7 +133,7 @@ def main():
                     <a href="https://www.instagram.com/riccardoperotti_/" target="_blank">
                         Riccardo Perotti
                     </a>
-                    Copyright © 2024 
+                    &nbsp;- Copyright © 2024 
         </p>
     </div>
     """
