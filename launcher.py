@@ -19,7 +19,10 @@ def main():
     # Greet the user by their name.
     #st.write('Ciao, %s !' % st.experimental_user.email)
 
-    st.title("Pianificatore di turni")
+    header="""
+    <h1> 👩‍⚕️ Pianificatore di turni </h1>
+    """
+    st.markdown(header,unsafe_allow_html=True)
 
     anno = None
     mese = None
@@ -27,14 +30,14 @@ def main():
     esigenze                = pd.read_csv('esigenze.csv', sep=";")
     vincoli_infermiere      = pd.read_csv('vincoli_infermiere.csv', sep=";").set_index("Infermiere")
 
-    with st.expander("Visualizza ultima pianificazione salvata"):
+    with st.expander("📆 Ultima pianificazione salvata"):
         try:
             turni_old             = pd.read_csv('turni.csv', sep=";").set_index("Infermiere")
             df_tu_old = st.dataframe(turni_old.style.map(past_days, subset=turni_old.columns[:5]).map(color_vowel))
         except:
             st.text("Non ci sono pianificazioni di turni salvate.")
 
-    with st.expander("Configura la pianificazione (esigenze, vincoli e turni del mese precedente)"):    
+    with st.expander("🛠️ Configura la pianificazione", True):    
         col_anno, col_mese = st.columns(2)
         with col_anno:
             anno = st.number_input("Seleziona l'anno:", min_value=2023, max_value=2100, value=datetime.now().year)
@@ -127,8 +130,8 @@ def main():
 
 
     footer="""
-    <div style='position: fixed;left: 0;bottom: 0;width: 100%; text-align: center;'>
-        <p>
+    <div style='position: fixed;left: 0;bottom: 0;width: 100%; background-color:#262730; text-align: center;'>
+        <p style='margin:10px'>
             Developed with ❤ by 
                     <a href="https://www.instagram.com/riccardoperotti_/" target="_blank">
                         Riccardo Perotti
