@@ -53,7 +53,7 @@ class NurseShiftScheduler():
             else: 
                 self.intestazione_output.append(str(s) + " " + str(d))
 
-        self.output_solution         = {}
+        self.output_solution         = None
 
     def giorno_settimana_cinque_giorni_prima(self):
         giorni_settimana = [day[:3] for day in list(calendar.day_name)]
